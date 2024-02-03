@@ -4,29 +4,31 @@ import java.util.List;
 
 public class CountryApi {
 
-    private CountryAPIService countryAPIService;
+	private CountryAPIService countryAPIService;
 
-    public CountryApi() {
-        this.countryAPIService = new CountryAPIService();
-    }
+	public CountryApi() {
+		this.countryAPIService = new CountryAPIService();
+	}
 
-    public List<CountryInfo> getAllCountries() throws CountriesAPIException {
-        return countryAPIService.getAllCountries();
-    }
+	public List<CountryInfo> getAllCountries() throws CountriesAPIException {
+		return countryAPIService.getAllCountries();
+	}
 
-    public CountryInfo getCountryByName(String name) throws CountriesAPIException {
-        return countryAPIService.getCountryByName(name).stream().findFirst().orElse(null);
-    }
+	public CountryInfo getCountryByName(String name) throws CountriesAPIException {
+		return countryAPIService.getCountryByName(name).stream().filter(country -> country.getName().getCommon().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+	}
 
-    public List<CountryInfo> getCountriesByLanguage(String language) throws CountriesAPIException {
-        return countryAPIService.getCountriesByLanguage(language);
-    }
+	public List<CountryInfo> getCountriesByLanguage(String language) throws CountriesAPIException {
+		return countryAPIService.getCountriesByLanguage(language);
+	}
 
-    public List<CountryInfo> getCountriesByCurrency(String currency) throws CountriesAPIException {
-        return countryAPIService.getCountriesByCurrency(currency);
-    }
+	public List<CountryInfo> getCountriesByCurrency(String currency) throws CountriesAPIException {
+		return countryAPIService.getCountriesByCurrency(currency);
+	}
 
-    public List<CountryInfo> getCountriesByRegion(String region) throws CountriesAPIException {
-        return countryAPIService.getCountriesByRegion(region);
-    }
+	public List<CountryInfo> getCountriesByRegion(String region) throws CountriesAPIException {
+		return countryAPIService.getCountriesByRegion(region);
+	}
 }

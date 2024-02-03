@@ -1,103 +1,85 @@
 package gr.unipi.CountriesFX;
 
 import javafx.application.Application;
-import javafx.geometry.Insets;
+import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class App extends Application {
-    private CountryApi countryApi = new CountryApi();
-    private LinkedList<String> searchHistory = new LinkedList<>();
-    private Map<ActionType, List<String>> suggestionsMap = new HashMap<>();
-    private ListView<String> historyListView;
+	private CountryApi countryApi = new CountryApi();
+	private LinkedList<String> searchHistory = new LinkedList<>();
+	private Map<ActionType, List<String>> suggestionsMap = new HashMap<>();
 
-    @Override
-    public void start(Stage stage) throws CountriesAPIException {
-    	
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: yellow;");
-        
-        
+	@Override
+	public void start(Stage stage) throws CountriesAPIException {
+		BorderPane root = new BorderPane();
 
-        TextField queryInput = new TextField();
-        queryInput.setPromptText("Enter your query here");
-        
-        StackPane stackPane = new StackPane();
-        ImageView defaultIcon = new ImageView(new Image("file:C:/Users/User/Downloads/OIP.jpg"));
-        defaultIcon.setPreserveRatio(true);
-        defaultIcon.setFitWidth(400); // Adjust the size of the default icon as needed
-        stackPane.getChildren().add(defaultIcon);
+		TextField queryInput = new TextField();
+		queryInput.setVisible(false);
+		queryInput.setPromptText("Enter your query here");
 
+		TextArea textArea = new TextArea();
+		textArea.setEditable(false);
 
-        TextArea textArea = new TextArea();
-        textArea.setEditable(false);
-        stackPane.getChildren().add(textArea);
+		// Populate suggestions map
+		populateSuggestions();
 
-        // Populate suggestions map
-        populateSuggestions();
+		Button fetchAllButton = new Button("Fetch All Countries");
+		fetchAllButton.setOnAction(e -> fetchAllCountries(textArea));
 
-        Button fetchAllButton = new Button("Fetch All Countries");
-        fetchAllButton.setOnAction(e -> fetchAllCountries(textArea));
+		Button fetchByCurrencyButton = createActionButton("Fetch by Currency", queryInput, textArea,
+				ActionType.CURRENCY);
+		Button fetchByLanguageButton = createActionButton("Fetch by Language", queryInput, textArea,
+				ActionType.LANGUAGE);
+		Button fetchByRegionButton = createActionButton("Fetch by Region", queryInput, textArea, ActionType.REGION);
+		Button fetchByNameButton = createActionButton("Fetch by Name", queryInput, textArea, ActionType.NAME);
 
-        Button fetchByCurrencyButton = createActionButton("Fetch by Currency", queryInput, textArea, ActionType.CURRENCY);
-        Button fetchByLanguageButton = createActionButton("Fetch by Language", queryInput, textArea, ActionType.LANGUAGE);
-        Button fetchByRegionButton = createActionButton("Fetch by Region", queryInput, textArea, ActionType.REGION);
-        Button fetchByNameButton = createActionButton("Fetch by Name", queryInput, textArea, ActionType.NAME);
+		Button clearButton = new Button("Clear Results");
+		clearButton.setOnAction(e -> textArea.clear());
 
-        Button clearButton = new Button("Clear Results");
-        clearButton.setOnAction(e -> textArea.clear());
+		// History ListView
+		ListView<String> historyListView = new ListView<>();
+		historyListView.setPrefHeight(150);
+		historyListView.setVisible(false); // Initially set to invisible
 
-        historyListView = new ListView<>();
-        historyListView.setPrefHeight(150);
-        historyListView.setVisible(false); //
-        
-        historyListView.setOnMouseClicked(event -> {
-            String selectedSearch = historyListView.getSelectionModel().getSelectedItem();
-            if (selectedSearch != null && !selectedSearch.isEmpty()) {
-                queryInput.setText(selectedSearch);
-                queryInput.setVisible(true); // Ensure the queryInput is visible if it was not
-                // Optionally, you can also trigger the search automatically here
-            }
-        });
+		// Create a ContextMenu for the previous searches
+		ContextMenu historyMenu = new ContextMenu();
+		historyListView.setContextMenu(historyMenu);
 
-        Button historyButton = new Button("Show History");
-        historyButton.setOnAction(e -> showHistory(historyListView));
+		historyListView.setOnMouseClicked(event -> {
+			if (event.getClickCount() == 2) {
+				String selectedSearch = historyListView.getSelectionModel().getSelectedItem();
+				if (selectedSearch != null) {
+					queryInput.setText(selectedSearch);
+					fetchByNameButton.fire(); // Simulate a button click for reuse
+				}
+			}
+		});
 
-        // VBox for sidebar layout with added padding to push elements a bit lower
-        VBox sidebar = new VBox(10, queryInput, fetchAllButton, fetchByCurrencyButton, fetchByLanguageButton,
-                fetchByRegionButton, fetchByNameButton, clearButton, historyButton, historyListView);
-        sidebar.setAlignment(Pos.TOP_CENTER);
-        sidebar.setPadding(new Insets(20, 0, 0, 0)); // Top padding to lower the buttons
+		// History Button
+		Button historyButton = new Button("Show History");
+		historyButton.setOnAction(e -> showHistory(historyListView));
 
-        root.setLeft(sidebar);
-        root.setCenter(textArea);
+		VBox sidebar = new VBox(10, fetchAllButton, fetchByCurrencyButton, fetchByLanguageButton, fetchByRegionButton,
+				fetchByNameButton, queryInput, clearButton, historyButton, historyListView);
+		sidebar.setAlignment(Pos.TOP_CENTER);
 
-        Scene scene = new Scene(root, 800, 600);
-        stage.setTitle("Java Final Project App"); // Set window title
-        stage.setScene(scene);
-        stage.getIcons().add(new Image("file:C:/Users/User/Downloads/OIP.jpg"));
-   
+		root.setLeft(sidebar);
+		root.setCenter(textArea);
 
-        stage.show();
-    }
+		Scene scene = new Scene(root, 800, 600);
+		stage.setTitle("Country Information");
+		stage.setScene(scene);
+		stage.show();
+	}
 
 	private Button createActionButton(String buttonText, TextField queryInput, TextArea textArea,
 			ActionType actionType) {
@@ -241,6 +223,7 @@ public class App extends Application {
 			textArea.setText("Failed to fetch country by name: " + e.getMessage());
 		}
 	}
+
 	private String formatCountryInfo(CountryInfo country) {
 	    String currencyInfo = "N/A";
 	    if (country.getCurrencies() != null) {
@@ -249,18 +232,17 @@ public class App extends Application {
 	            .collect(Collectors.joining(", "));
 	    }
 
-	    String regionInfo = country.getContinents() != null ? String.join(", ", country.getContinents()) : "N/A";
-	    List<String> capitals = country.getCapitals();
-	    String capitalInfo = (capitals != null && !capitals.isEmpty()) ? String.join(", ", capitals) : "N/A";
+	    String regionInfo = String.join(", ", country.getContinents());
+	    String capitalInfo = country.getCapitals() != null ? String.join(", ", country.getCapitals()) : "N/A";
 
-	    
 	    return "Country Information:\n" + 
 	        "Name: " + (country.getName() != null ? country.getName().getCommon() : "N/A") + "\n" + 
 	        "Currencies: " + currencyInfo + "\n" + 
 	        "Population: " + country.getPopulation() + "\n" + 
-	        "Region: " + regionInfo + "\n"+ // Make sure capital information is included
-	    "Capital: " + capitalInfo + "\n";
+	        "Region: " + regionInfo + "\n" + 
+	        "Capital: " + capitalInfo + "\n"; // Make sure capital information is included
 	}
+
 	private void showHistory(ListView<String> historyListView) {
 		historyListView.getItems().clear();
 		historyListView.getItems().addAll(searchHistory);

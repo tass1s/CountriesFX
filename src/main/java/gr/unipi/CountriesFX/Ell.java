@@ -1,5 +1,6 @@
 
 package gr.unipi.CountriesFX;
+
 import com.fasterxml.jackson.annotation.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -11,52 +12,49 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-    "official",
-    "common"
-})
+@JsonPropertyOrder({ "official", "common" })
 
 public class Ell {
 
-    @JsonProperty("official")
-    private String official;
-    @JsonProperty("common")
-    private String common;
-    @JsonIgnore
-    private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
+	@JsonProperty("official")
+	private String official;
+	@JsonProperty("common")
+	private String common;
+	@JsonIgnore
+	private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
-    @JsonProperty("official")
-    public String getOfficial() {
-        return official;
-    }
+	@JsonProperty("official")
+	public String getOfficial() {
+		return official;
+	}
 
-    @JsonProperty("official")
-    public void setOfficial(String official) {
-        this.official = official;
-    }
+	@JsonProperty("official")
+	public void setOfficial(String official) {
+		this.official = official;
+	}
 
-    @JsonProperty("common")
-    public String getCommon() {
-        return common;
-    }
+	@JsonProperty("common")
+	public String getCommon() {
+		return common;
+	}
 
-    @JsonProperty("common")
-    public void setCommon(String common) {
-        this.common = common;
-    }
+	@JsonProperty("common")
+	public void setCommon(String common) {
+		this.common = common;
+	}
 
-    @JsonAnyGetter
-    public Map<String, Object> getAdditionalProperties() {
-        return this.additionalProperties;
-    }
+	@JsonAnyGetter
+	public Map<String, Object> getAdditionalProperties() {
+		return this.additionalProperties;
+	}
 
-    @JsonAnySetter
-    public void setAdditionalProperty(String name, Object value) {
-        this.additionalProperties.put(name, value);
-    }
-    
-    public String toString() {
-        return "Official: " + official + ", Common: " + common;
-    }
+	@JsonAnySetter
+	public void setAdditionalProperty(String name, Object value) {
+		this.additionalProperties.put(name, value);
+	}
+
+	public String toString() {
+		return "Official: " + official + ", Common: " + common;
+	}
 
 }
